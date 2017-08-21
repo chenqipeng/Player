@@ -16,25 +16,24 @@ export default {
 </script>
 
 <style lang="css">
-@import url("//at.alicdn.com/t/font_383468_gljc0u2t9ktn8kt9.css");
-
 #headbar {
-  height: 120px;
-  padding: 0 120px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 45px;
+  padding: 0 45px;
 }
 
 .title {
-  height: 100px;
-  padding: 10px;
+  height: 100%;
 }
 
 .back, .share {
   position: absolute;
   top: 0;
-  width: 120px;
-  height: 120px;
-  line-height: 120px;
-  font-size: 65px;
+  width: 45px;
+  height: 45px;
+  line-height: 45px;
+  font-size: 24px;
   text-align: center;
 }
 
@@ -49,16 +48,15 @@ export default {
 .title h1 {
   width: 100%;
   margin: 0;
-  padding-top: 10px;
-  font-size: 32px;
-  line-height: 50px;
+  padding-top: 5px;
+  font-size: 14px;
   white-space: nowrap;
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
 
 .title span {
-  font-size: 24px;
+  font-size: 12px;
   color: #999;
 }
 
