@@ -2,9 +2,9 @@
   <div id="controller">
     <div class="progress-control">
       <div class="current-time">{{time}}</div>
-      <div class="progress-bar" @touchstart="touchstart" @touchmove="touchmove">
+      <div class="progress-bar" id="progress-bar" @touchstart="touchstart" @touchmove="touchmove">
         <div class="progress-line" id="progress-line"></div>
-        <div class="progress-point"></div>
+        <div class="progress-point" id="progress-point" @touchstart="touchstart"></div>
       </div>
       <div class="total-time">05:00</div>
     </div>
@@ -52,15 +52,23 @@ export default {
 const BeginX = 60;
 
 /**
+ * 进度条点偏移量
+ * @type {Number}
+ */
+const PointOffset = 7;
+
+/**
  * 计算用户调节的时间
  * @param  {Number} x 触点的clientX
  * @return {String} “分:秒”
  */
 function calTime(x) {
-  const TotalWidth = document.getElementById('progress-line').offsetWidth;
+  const TotalWidth = document.getElementById('progress-bar').offsetWidth;
   const TotalTime = 300;
   let offsetX = (x>BeginX) ? Math.round(x-BeginX) : 0;
   let currentX = (offsetX<TotalWidth) ? offsetX : TotalWidth;
+  document.getElementById('progress-point').style.left = (currentX-PointOffset) + 'px';
+  document.getElementById('progress-line').style.width = currentX + 'px';
   let currentS = Math.round(currentX/TotalWidth*TotalTime);
   return trsfTime(currentS);
 }
@@ -109,11 +117,13 @@ function trsfTime(second) {
   box-sizing: border-box;
   height: 100%;
   padding: 10px 0px;
+  background: #ccc content-box;
 }
 
 .progress-line {
+  width: 0;
   height: 100%;
-  background-color: #ccc;
+  background-color: #f00;
 }
 
 .progress-point {
