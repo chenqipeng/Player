@@ -1,15 +1,15 @@
 <template lang="html">
   <div id="controller">
-    <audio id="audioPlayer" controls @canplay="canPlay" @play="play" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
+    <audio id="audioPlayer" @canplay="canPlay" @play="play" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
 
     <div class="progress-control">
-      <div class="current-time">{{currentTime}}</div>
+      <div class="current-time">{{currentTimeText}}</div>
       <div class="progress-bar" id="progress-bar" @touchstart="followTouch" @touchmove="followTouch" @touchend="updateTouch">
         <div class="progress-line" id="progress-line">
           <span class="progress-point"></span>
         </div>
       </div>
-      <div class="total-time">{{totalTime}}</div>
+      <div class="total-time">{{totalTimeText}}</div>
     </div>
 
     <div class="play-control">
@@ -37,8 +37,16 @@
 export default {
   data: function() {
     return {
-      currentTime: '00:00',
-      totalTime: '00:00'
+      currentTime: 0,
+      totalTime: 0
+    }
+  },
+  computed: {
+    currentTimeText () {
+      return sToms(this.currentTime);
+    },
+    totalTimeText () {
+      return sToms(this.totalTime);
     }
   },
   methods: {
@@ -47,7 +55,6 @@ export default {
         clearInterval(UpdateView.si);
         UpdateView.si = 0;
       }
-
       const BeginX = 60; //触点起始横坐标，值为进度条偏移值
       const TotalWidth = document.getElementById('progress-bar').offsetWidth;
       const TotalTime = document.getElementById('audioPlayer').duration;
@@ -57,16 +64,16 @@ export default {
       let currentX = (offsetX<TotalWidth) ? offsetX : TotalWidth;
       let currentS = Math.round(currentX/TotalWidth*TotalTime);
       progressLine.style.width = currentX + 'px';
-      this.currentTime = sToms(currentS);
+      this.currentTime = currentS;
     },
     updateTouch () {
       let vm = this;
       let audio = document.getElementById('audioPlayer');
-      audio.currentTime = msTos(this.currentTime);
+      audio.currentTime = this.currentTime;
       if(!audio.paused) { //恢复视图自动更新
         UpdateView.si = setInterval(function() {
           UpdateView.progressLine(audio.currentTime);
-          vm.currentTime = sToms(audio.currentTime);
+          vm.currentTime = audio.currentTime;
         }, UpdateView.TimeOut);
       }
     },
@@ -79,7 +86,7 @@ export default {
       }
     },
     canPlay () {
-      this.totalTime = sToms(document.getElementById('audioPlayer').duration);
+      this.totalTime = document.getElementById('audioPlayer').duration;
     },
     play () {
       let vm = this;
@@ -87,14 +94,14 @@ export default {
       UpdateView.toggle();
       UpdateView.si = setInterval(function() {
         UpdateView.progressLine(audio.currentTime);
-        vm.currentTime = sToms(audio.currentTime);
+        vm.currentTime = audio.currentTime;
       }, UpdateView.TimeOut);
     },
     pause () {
       let audio = document.getElementById('audioPlayer');
       UpdateView.toggle();
       UpdateView.progressLine(audio.currentTime);
-      this.currentTime = sToms(audio.currentTime);
+      this.currentTime = audio.currentTime;
       clearInterval(UpdateView.si);
       UpdateView.si = 0;
     }
@@ -111,16 +118,6 @@ function sToms(s) {
   let second = Math.trunc(s%60);
   let format = (b) => (b>=10) ? b : ('0'+b);
   return format(min) + ':' + format(second);
-}
-
-/**
- * 将'mm:ss'形式转换成's'
- * @param  {String} ms 'mm:ss'形式
- * @return {Number} 秒数
- */
-function msTos(ms) {
-  let msAry = ms.split(':');
-  return msAry[0]*60 + msAry[1];
 }
 
 /**
