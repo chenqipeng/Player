@@ -2,6 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import Player from './Player'
+import './filters'
 
 Vue.config.productionTip = false
 

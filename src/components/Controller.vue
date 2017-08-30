@@ -3,13 +3,13 @@
     <audio id="audioPlayer" @canplay="canPlay" @play="play" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
 
     <div class="progress-control">
-      <div class="current-time">{{currentTimeText}}</div>
+      <div class="current-time">{{currentTime | sToms}}</div>
       <div class="progress-bar" id="progress-bar" @touchstart="followTouch" @touchmove="followTouch" @touchend="updateTouch">
         <div class="progress-line" id="progress-line">
           <span class="progress-point"></span>
         </div>
       </div>
-      <div class="total-time">{{totalTimeText}}</div>
+      <div class="total-time">{{totalTime | sToms}}</div>
     </div>
 
     <div class="play-control">
@@ -20,7 +20,7 @@
         <span class="iconfont icon-shangyishou"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-bofang" id="toggle" @touchend="togglePop"></span>
+        <span class="iconfont" :class="toggleClass" @touchend="togglePop"></span>
       </div>
       <div class="column">
         <span class="iconfont icon-xiayishou"></span>
@@ -38,15 +38,16 @@ export default {
   data: function() {
     return {
       currentTime: 0,
-      totalTime: 0
+      totalTime: 0,
+      isPlaying: false
     }
   },
   computed: {
-    currentTimeText () {
-      return sToms(this.currentTime);
-    },
-    totalTimeText () {
-      return sToms(this.totalTime);
+    toggleClass () {
+      return {
+        'icon-bofang': !this.isPlaying,
+        'icon-zanting': this.isPlaying
+      }
     }
   },
   methods: {
@@ -91,7 +92,7 @@ export default {
     play () {
       let vm = this;
       let audio = document.getElementById('audioPlayer');
-      UpdateView.toggle();
+      this.isPlaying = true;
       UpdateView.si = setInterval(function() {
         UpdateView.progressLine(audio.currentTime);
         vm.currentTime = audio.currentTime;
@@ -99,26 +100,16 @@ export default {
     },
     pause () {
       let audio = document.getElementById('audioPlayer');
-      UpdateView.toggle();
       UpdateView.progressLine(audio.currentTime);
       this.currentTime = audio.currentTime;
       clearInterval(UpdateView.si);
       UpdateView.si = 0;
+      this.isPlaying = false;
     }
   }
 }
 
-/**
- * 将's'形式转换成'mm:ss'
- * @param  {Number} s 秒数
- * @return {String} 'mm:ss'形式
- */
-function sToms(s) {
-  let min = Math.trunc(s/60);
-  let second = Math.trunc(s%60);
-  let format = (b) => (b>=10) ? b : ('0'+b);
-  return format(min) + ':' + format(second);
-}
+
 
 /**
  * 视图更新对象
@@ -132,11 +123,6 @@ const UpdateView = {
     const TotalTime = document.getElementById('audioPlayer').duration;
     let currentX = currentTime/TotalTime * TotalWidth;
     document.getElementById('progress-line').style.width = currentX + 'px';
-  },
-  toggle () {
-    let toggleEl = document.getElementById('toggle');
-    toggleEl.classList.toggle('icon-bofang');
-    toggleEl.classList.toggle('icon-zanting');
   }
 };
 
