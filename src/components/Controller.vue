@@ -1,11 +1,11 @@
 <template lang="html">
   <div id="controller">
-    <audio id="audioPlayer" @canplay="canPlay" @play="play" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
+    <audio ref="audio" controls @canplay="canPlay" @playing="playing" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
 
     <div class="progress-control">
       <div class="current-time">{{currentTime | sToms}}</div>
-      <div class="progress-bar" id="progress-bar" @touchstart="followTouch" @touchmove="followTouch" @touchend="updateTouch">
-        <div class="progress-line" id="progress-line">
+      <div class="progress-bar" ref="progresBar" @touchstart="followTouch" @touchmove="followTouch" @touchend="updateTouch">
+        <div class="progress-line" :style="{width: progressX}">
           <span class="progress-point"></span>
         </div>
       </div>
@@ -39,7 +39,8 @@ export default {
     return {
       currentTime: 0,
       totalTime: 0,
-      isPlaying: false
+      isPlaying: false,
+      si: 0
     }
   },
   computed: {
@@ -48,38 +49,31 @@ export default {
         'icon-bofang': !this.isPlaying,
         'icon-zanting': this.isPlaying
       }
+    },
+    progressX () {
+      return (this.totalTime>0) ? (this.currentTime/this.totalTime*100 + '%') : 0;
     }
   },
   methods: {
     followTouch (event) {
-      if(UpdateView.si !== 0) { //先停止自动更新视图
-        clearInterval(UpdateView.si);
-        UpdateView.si = 0;
+      if(this.si !== 0) { //先停止自动更新视图
+        clearInterval(this.si);
+        this.si = 0;
       }
       const BeginX = 60; //触点起始横坐标，值为进度条偏移值
-      const TotalWidth = document.getElementById('progress-bar').offsetWidth;
-      const TotalTime = document.getElementById('audioPlayer').duration;
-      let progressLine = document.getElementById('progress-line');
+      const TotalWidth = this.$refs.progresBar.offsetWidth;
+      const TotalTime = this.$refs.audio.duration;
       let clientX = event.changedTouches[0].clientX;
       let offsetX = (clientX>BeginX) ? clientX-BeginX : 0;
       let currentX = (offsetX<TotalWidth) ? offsetX : TotalWidth;
       let currentS = Math.round(currentX/TotalWidth*TotalTime);
-      progressLine.style.width = currentX + 'px';
       this.currentTime = currentS;
     },
     updateTouch () {
-      let vm = this;
-      let audio = document.getElementById('audioPlayer');
-      audio.currentTime = this.currentTime;
-      if(!audio.paused) { //恢复视图自动更新
-        UpdateView.si = setInterval(function() {
-          UpdateView.progressLine(audio.currentTime);
-          vm.currentTime = audio.currentTime;
-        }, UpdateView.TimeOut);
-      }
+      this.$refs.audio.currentTime = this.currentTime;
     },
     togglePop () {
-      let audio = document.getElementById('audioPlayer');
+      let audio = this.$refs.audio;
       if(audio.paused) {
         audio.play();
       } else {
@@ -87,44 +81,23 @@ export default {
       }
     },
     canPlay () {
-      this.totalTime = document.getElementById('audioPlayer').duration;
+      this.totalTime = this.$refs.audio.duration;
     },
-    play () {
+    playing () {
       let vm = this;
-      let audio = document.getElementById('audioPlayer');
       this.isPlaying = true;
-      UpdateView.si = setInterval(function() {
-        UpdateView.progressLine(audio.currentTime);
-        vm.currentTime = audio.currentTime;
-      }, UpdateView.TimeOut);
+      this.si = setInterval(function() {
+        vm.currentTime = vm.$refs.audio.currentTime;
+      }, 500);
     },
     pause () {
-      let audio = document.getElementById('audioPlayer');
-      UpdateView.progressLine(audio.currentTime);
-      this.currentTime = audio.currentTime;
-      clearInterval(UpdateView.si);
-      UpdateView.si = 0;
+      this.currentTime = this.$refs.audio.currentTime;
+      clearInterval(this.si);
+      this.si = 0;
       this.isPlaying = false;
     }
   }
 }
-
-
-
-/**
- * 视图更新对象
- * @type {Object}
- */
-const UpdateView = {
-  si: 0, //setInterval intervalID
-  TimeOut: 500, //setInterval timeout
-  progressLine (currentTime) {
-    const TotalWidth = document.getElementById('progress-bar').offsetWidth;
-    const TotalTime = document.getElementById('audioPlayer').duration;
-    let currentX = currentTime/TotalTime * TotalWidth;
-    document.getElementById('progress-line').style.width = currentX + 'px';
-  }
-};
 
 </script>
 
