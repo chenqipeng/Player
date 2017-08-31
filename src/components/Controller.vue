@@ -30,6 +30,21 @@
       </div>
     </div>
 
+    <div class="list-container" :style="{display: listShow ? 'block' : 'none'}" @touchend.self="closeList">
+      <div class="list-box">
+        <div class="list-head">
+          <a href="#" class="list-loop">列表循环</a>
+          <a href="#" class="list-collect">收藏</a>
+          <a href="#" class="list-clean">清空</a>
+        </div>
+        <div class="list-body">
+          <ul class="list-content">
+            <li v-for="n in 20" class="list-item">song{{n}}<span>-singer{{n}}</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -40,7 +55,8 @@ export default {
       currentTime: 0,
       totalTime: 0,
       isPlaying: false,
-      si: 0
+      si: 0,
+      listShow: false
     }
   },
   computed: {
@@ -97,11 +113,15 @@ export default {
       this.isPlaying = false
     },
     list () {
-      this.$http.get('/api').then(response => {
-        console.log(response)
-      }, response => {
-        console.error(response)
-      })
+      this.listShow = true
+      // this.$http.get('/api').then(response => {
+      //   console.log(response)
+      // }, response => {
+      //   console.error(response)
+      // })
+    },
+    closeList (event) {
+      this.listShow = false
     }
   }
 }
@@ -170,5 +190,75 @@ export default {
 }
 .column .iconfont {
   font-size: 32px;
+}
+
+.list-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.list-box {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 325px;
+  padding-top: 50px;
+  background-color: #FAFAFA;
+}
+
+.list-head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  border-bottom: 1px #ddd solid;
+}
+
+.list-head a {
+  display: inline-block;
+  padding: 0 15px;
+  height: 100%;
+  color: #000;
+  text-decoration: none;
+}
+
+.list-head a:nth-of-type(n+2) {
+  float: right;
+}
+
+.list-body {
+  box-sizing: border-box;
+  padding-bottom: 10px;
+  height: 100%;
+  overflow: scroll;
+}
+
+.list-body::-webkit-scrollbar {
+  display: none;
+}
+
+.list-content {
+  margin: 0;
+  padding: 0 0 0 10px;
+  list-style: none;
+}
+
+.list-item {
+  box-sizing: border-box;
+  padding: 10px 0;
+  height: 45px;
+  border-bottom: 1px #eee solid;
+}
+.list-item span {
+  font-size: 12px;
+  color: #999;
 }
 </style>
