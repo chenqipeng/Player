@@ -21,7 +21,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 @import url("//at.alicdn.com/t/font_383468_cqvxtjrh4s8rrudi.css");
 
 html, body {

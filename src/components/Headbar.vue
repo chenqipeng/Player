@@ -15,7 +15,7 @@ export default {
 }
 </script>
 
-<style lang="css">
+<style lang="css" scoped>
 #headbar {
   box-sizing: border-box;
   width: 100%;

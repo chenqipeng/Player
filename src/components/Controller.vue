@@ -1,6 +1,6 @@
 <template lang="html">
   <div id="controller">
-    <audio ref="audio" controls @canplay="canPlay" @playing="playing" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
+    <audio ref="audio" @canplay="canPlay" @playing="playing" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
 
     <div class="progress-control">
       <div class="current-time">{{currentTime | sToms}}</div>
@@ -51,57 +51,57 @@ export default {
       }
     },
     progressX () {
-      return (this.totalTime>0) ? (this.currentTime/this.totalTime*100 + '%') : 0;
+      return (this.totalTime>0) ? (this.currentTime/this.totalTime*100 + '%') : 0
     }
   },
   methods: {
     followTouch (event) {
       if(this.si !== 0) { //先停止自动更新视图
-        clearInterval(this.si);
-        this.si = 0;
+        clearInterval(this.si)
+        this.si = 0
       }
-      const BeginX = 60; //触点起始横坐标，值为进度条偏移值
-      const TotalWidth = this.$refs.progresBar.offsetWidth;
-      const TotalTime = this.$refs.audio.duration;
-      let clientX = event.changedTouches[0].clientX;
-      let offsetX = (clientX>BeginX) ? clientX-BeginX : 0;
-      let currentX = (offsetX<TotalWidth) ? offsetX : TotalWidth;
-      let currentS = Math.round(currentX/TotalWidth*TotalTime);
-      this.currentTime = currentS;
+      const BeginX = 60 //触点起始横坐标，值为进度条偏移值
+      const TotalWidth = this.$refs.progresBar.offsetWidth
+      const TotalTime = this.$refs.audio.duration
+      let clientX = event.changedTouches[0].clientX
+      let offsetX = (clientX>BeginX) ? clientX-BeginX : 0
+      let currentX = (offsetX<TotalWidth) ? offsetX : TotalWidth
+      let currentS = Math.round(currentX/TotalWidth*TotalTime)
+      this.currentTime = currentS
     },
     updateTouch () {
-      this.$refs.audio.currentTime = this.currentTime;
+      this.$refs.audio.currentTime = this.currentTime
     },
     togglePop () {
-      let audio = this.$refs.audio;
+      let audio = this.$refs.audio
       if(audio.paused) {
-        audio.play();
+        audio.play()
       } else {
-        audio.pause();
+        audio.pause()
       }
     },
     canPlay () {
-      this.totalTime = this.$refs.audio.duration;
+      this.totalTime = this.$refs.audio.duration
     },
     playing () {
-      let vm = this;
-      this.isPlaying = true;
+      let vm = this
+      this.isPlaying = true
       this.si = setInterval(function() {
-        vm.currentTime = vm.$refs.audio.currentTime;
-      }, 500);
+        vm.currentTime = vm.$refs.audio.currentTime
+      }, 500)
     },
     pause () {
-      this.currentTime = this.$refs.audio.currentTime;
-      clearInterval(this.si);
-      this.si = 0;
-      this.isPlaying = false;
+      this.currentTime = this.$refs.audio.currentTime
+      clearInterval(this.si)
+      this.si = 0
+      this.isPlaying = false
     }
   }
 }
 
 </script>
 
-<style lang="css">
+<style lang="css" scoped>
 .progress-control {
   position: relative;
   box-sizing: border-box;
