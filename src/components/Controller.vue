@@ -26,7 +26,7 @@
         <span class="iconfont icon-xiayishou"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-bofangliebiao"></span>
+        <span class="iconfont icon-bofangliebiao" @touchend="list"></span>
       </div>
     </div>
 
@@ -95,6 +95,13 @@ export default {
       clearInterval(this.si)
       this.si = 0
       this.isPlaying = false
+    },
+    list () {
+      this.$http.get('/api').then(response => {
+        console.log(response)
+      }, response => {
+        console.error(response)
+      })
     }
   }
 }
