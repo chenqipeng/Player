@@ -30,8 +30,12 @@
       </div>
     </div>
 
-    <div class="list-container" :style="{display: listShow ? 'block' : 'none'}" @touchend.self="closeList">
-      <div class="list-box">
+    <transition name="bg">
+      <div class="list-bg" v-if="listShow" @touchend="closeList"></div>
+    </transition>
+
+    <transition name="box">
+      <div class="list-box" v-if="listShow">
         <div class="list-head">
           <a href="#" class="list-loop">列表循环</a>
           <a href="#" class="list-collect">收藏</a>
@@ -43,7 +47,7 @@
           </ul>
         </div>
       </div>
-    </div>
+    </transition>
 
   </div>
 </template>
@@ -158,14 +162,14 @@ export default {
   box-sizing: border-box;
   height: 100%;
   padding: 10px 0px;
-  background: #ccc content-box;
+  background: #CCC content-box;
 }
 
 .progress-line {
   position: relative;
   width: 0;
   height: 100%;
-  background-color: #f00;
+  background-color: #F00;
 }
 
 .progress-point {
@@ -192,23 +196,26 @@ export default {
   font-size: 32px;
 }
 
-.list-container {
+.list-bg {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
 }
 
 .list-box {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
+  box-sizing: border-box;
   width: 100%;
-  height: 325px;
+  height: 375px;
   padding-top: 50px;
   background-color: #FAFAFA;
+  z-index: 2;
 }
 
 .list-head {
@@ -219,7 +226,7 @@ export default {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  border-bottom: 1px #ddd solid;
+  border-bottom: 1px #DDD solid;
 }
 
 .list-head a {
@@ -255,10 +262,30 @@ export default {
   box-sizing: border-box;
   padding: 10px 0;
   height: 45px;
-  border-bottom: 1px #eee solid;
+  border-bottom: 1px #EEE solid;
 }
 .list-item span {
   font-size: 12px;
   color: #999;
+}
+
+.bg-enter-active, .bg-leave-active {
+  transition: background-color .3s
+}
+.bg-enter, .bg-leave-to {
+  background-color: rgba(0, 0, 0, 0);
+}
+.bg-enter-to {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.box-enter-active, .box-leave-active {
+  transition: bottom .3s
+}
+.box-enter, .box-leave-to {
+  bottom: -375px;
+}
+.box-enter-to {
+  bottom: 0px;
 }
 </style>
