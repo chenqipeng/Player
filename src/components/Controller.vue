@@ -26,7 +26,7 @@
         <span class="iconfont icon-xiayishou"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-bofangliebiao" @touchend="list"></span>
+        <span class="iconfont icon-bofangliebiao" @touchend="showList"></span>
       </div>
     </div>
 
@@ -64,7 +64,8 @@ export default {
       totalTime: 0,
       isPlaying: false,
       si: 0,
-      listShow: false
+      listShow: false,
+      list: []
     }
   },
   computed: {
@@ -120,16 +121,24 @@ export default {
       this.si = 0
       this.isPlaying = false
     },
-    list () {
+    showList () {
       this.listShow = true
-      // this.$http.get('/api').then(response => {
-      //   console.log(response)
-      // }, response => {
-      //   console.error(response)
-      // })
+
+      let list = this.$ls.get('list');
+      if(list) {
+        this.list = list
+      } else {
+        this.$http.get('/api').then(response => {
+          console.log('get it')
+          console.log(response)
+        }, response => {
+          console.error('获取歌单失败')
+        })
+      }
     },
     closeList (event) {
       this.listShow = false
+      console.log(this.list)
     }
   }
 }

@@ -49,7 +49,7 @@ Object.keys(proxyTable).forEach(function (context) {
   app.use(proxyMiddleware(options.filter || context, options))
 })
 
-app.use('/api', proxyMiddleware({target: 'http://music.163.com/api/song/detail?ids=%5B347230%5D', changeOrigin: true}));
+app.use('/api', proxyMiddleware({target: 'http://localhost:3000/playlist/detail?id=530939045', changeOrigin: true}));
 
 // handle fallback for HTML5 history API
 app.use(require('connect-history-api-fallback')())
