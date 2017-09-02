@@ -37,13 +37,17 @@
     <transition name="box">
       <div class="list-box" v-if="listShow">
         <div class="list-head">
-          <a href="#" class="list-loop">列表循环</a>
-          <a href="#" class="list-collect">收藏</a>
-          <a href="#" class="list-clean">清空</a>
+          <a href="#" class="list-loop"><span class="iconfont icon-liebiaoxunhuan"></span>列表循环(20)</a>
+          <a href="#" class="list-clean"><span class="iconfont icon-qingkong"></span>清空</a>
+          <a href="#" class="list-collect"><span class="iconfont icon-shoucang"></span>收藏</a>
         </div>
         <div class="list-body">
           <ul class="list-content">
-            <li v-for="n in 20" class="list-item">song{{n}}<span>-singer{{n}}</span></li>
+            <li v-for="n in 20" class="list-item">
+              song{{n}}
+              <span class="list-singer">-singer{{n}}</span>
+              <span class="iconfont icon-cha"></span>
+            </li>
           </ul>
         </div>
       </div>
@@ -235,6 +239,15 @@ export default {
   height: 100%;
   color: #000;
   text-decoration: none;
+  font-size: 14px;
+}
+
+.list-head .iconfont {
+  display: block;
+  float: left;
+  margin-right: 2px;
+  font-size: 20px;
+  color: #999;
 }
 
 .list-head a:nth-of-type(n+2) {
@@ -260,17 +273,22 @@ export default {
 
 .list-item {
   box-sizing: border-box;
-  padding: 10px 0;
   height: 45px;
+  line-height: 45px;
   border-bottom: 1px #EEE solid;
 }
-.list-item span {
+.list-item .list-singer {
   font-size: 12px;
+  color: #999;
+}
+.list-item .iconfont {
+  float: right;
+  margin-right: 15px;
   color: #999;
 }
 
 .bg-enter-active, .bg-leave-active {
-  transition: background-color .3s
+  transition: background-color .3s;
 }
 .bg-enter, .bg-leave-to {
   background-color: rgba(0, 0, 0, 0);
@@ -280,7 +298,7 @@ export default {
 }
 
 .box-enter-active, .box-leave-active {
-  transition: bottom .3s
+  transition: bottom .3s;
 }
 .box-enter, .box-leave-to {
   bottom: -375px;
