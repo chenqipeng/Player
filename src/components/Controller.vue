@@ -128,7 +128,7 @@ export default {
       if(list) {
         this.list = list
       } else {
-        this.$http.get('/api').then(response => {
+        this.$http.get('/api/music/url?id=26598415').then(response => {
           console.log('get it')
           console.log(response)
         }, response => {
