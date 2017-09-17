@@ -43,9 +43,9 @@
         </div>
         <div class="list-body">
           <ul class="list-content">
-            <li v-for="n in 20" class="list-item">
-              song{{n}}
-              <span class="list-singer">-singer{{n}}</span>
+            <li v-for="song in list" class="list-item">
+              {{song.name}}
+              <span class="list-singer">-{{song.ar[0].name}}</span>
               <span class="iconfont icon-cha"></span>
             </li>
           </ul>
@@ -128,11 +128,14 @@ export default {
       if(list) {
         this.list = list
       } else {
-        this.$http.get('/api/music/url?id=26598415').then(response => {
+        this.$http.get('/api/playlist/detail?id=530939045').then(res => {
           console.log('get it')
-          console.log(response)
-        }, response => {
+          console.log(res)
+          this.list = res.body.playlist.tracks;
+
+        }, res => {
           console.error('获取歌单失败')
+          console.log(res)
         })
       }
     },
@@ -284,6 +287,8 @@ export default {
   box-sizing: border-box;
   height: 45px;
   line-height: 45px;
+  overflow: hidden;
+  /* TODO:  */
   border-bottom: 1px #EEE solid;
 }
 .list-item .list-singer {

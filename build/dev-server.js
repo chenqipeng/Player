@@ -49,10 +49,6 @@ Object.keys(proxyTable).forEach(function (context) {
   app.use(proxyMiddleware(options.filter || context, options))
 })
 
-app.use('/api', proxyMiddleware({target: 'http://localhost:3000', pathRewrite: {
-  '/api': ''
-}, changeOrigin: true}));
-
 // handle fallback for HTML5 history API
 app.use(require('connect-history-api-fallback')())
 
