@@ -1,12 +1,11 @@
 <template lang="html">
   <div id="controller">
-    <audio
-    @canplay="canPlay"
+    <audio src="" autoplay
     @playing="playing"
     @pause="pause"
     @timeupdate="timeUpdate"
-    @waiting="waiting"
     @durationchange="durationChange"
+    @loadedmetadata="loadedMetadata"
     ref="audio"></audio>
 
     <div class="progress-control">
@@ -30,7 +29,7 @@
         <span class="iconfont" :class="toggleClass" @click="togglePop"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-xiayishou"></span>
+        <span class="iconfont icon-xiayishou" @click="loadUrl"></span>
       </div>
       <div class="column">
         <span class="iconfont icon-bofangliebiao" @click="showList"></span>
@@ -111,11 +110,6 @@ export default {
         audio.pause()
       }
     },
-    canPlay () {
-      console.log('canplay')
-      // this.totalTime = this.$refs.audio.duration
-      // this.$refs.audio.play()
-    },
     playing () {
       this.isPlaying = true
     },
@@ -144,19 +138,24 @@ export default {
     play (id) {
       let audio = this.$refs.audio
       if(id != this.currentSong.id) {
-        audio.pause()
+        if(this.isPlaying) {
+          audio.pause()
+        } else {
+          // audio.load() //TODO 在真机Chrome上，缺少这步会导致第一次点击无法播放（而且这步必须放在此位置，放在修改src之后也不行），原因待查
+        }
+        this.currentTime = 0
+        this.totalTime = 0
         this.$http.get('/api/music/url?id='+id).then(res => {
           audio.src = res.body.data[0].url
-          // setTimeout(function() {
-          //   audio.play()
-          // }, 2000);
-          this.$http.get('/api/song/detail?ids='+id).then(res => {
-            this.currentSong = res.body.songs[0]
-          }, res => {
-            //TODO
-          })
+          audio.load()
+          console.log(audio.src);
         }, res => {
-          //TODO
+          console.error(res)//TODO
+        })
+        this.$http.get('/api/song/detail?ids='+id).then(res => {
+          this.currentSong = res.body.songs[0]
+        }, res => {
+          console.error(res)//TODO
         })
       } else if(id == this.currentSong.id && !this.isPlaying) {
         audio.play()
@@ -171,13 +170,28 @@ export default {
         this.currentTime = this.$refs.audio.currentTime
       }
     },
-    waiting () {
-      console.log('waiting')
-    },
     durationChange () {
       console.log('durationChange')
+    },
+    loadedMetadata () {
+      console.log('loadedMetadata')
       this.totalTime = this.$refs.audio.duration
-      this.$refs.audio.play()
+    },
+    loadUrl () {
+      let audio = this.$refs.audio
+      audio.src = 'http://m10.music.126.net/20170919010729/8b5a92cef795c2866996d38c43308be5/ymusic/0dcb/20b9/2c64/ca7e196cc933a589e3e800eebe15031d.mp3'
+      setTimeout(function() {
+        // audio.load()
+      }, 1000);
+      console.log(audio.src);
+      this.$http.get('/api/music/url?id=27506983').then(res => {
+        // audio.src = res.body.data[0].url
+        // audio.src = 'http://m10.music.126.net/20170919010729/8b5a92cef795c2866996d38c43308be5/ymusic/0dcb/20b9/2c64/ca7e196cc933a589e3e800eebe15031d.mp3'
+        audio.load()//TODO 问题出在这里，该处的load()没有执行，原因待查
+        // console.log(audio.src);
+      }, res => {
+        console.error(res)//TODO
+      })
     }
   }
 }
