@@ -1,6 +1,13 @@
 <template lang="html">
   <div id="controller">
-    <audio ref="audio" @canplay="canPlay" @playing="playing" @pause="pause" src="http://www.w3school.com.cn/i/song.mp3"></audio>
+    <audio
+    @canplay="canPlay"
+    @playing="playing"
+    @pause="pause"
+    @timeupdate="timeUpdate"
+    @waiting="waiting"
+    @durationchange="durationChange"
+    ref="audio"></audio>
 
     <div class="progress-control">
       <div class="current-time">{{currentTime | sToms}}</div>
@@ -20,18 +27,18 @@
         <span class="iconfont icon-shangyishou"></span>
       </div>
       <div class="column">
-        <span class="iconfont" :class="toggleClass" @touchend="togglePop"></span>
+        <span class="iconfont" :class="toggleClass" @click="togglePop"></span>
       </div>
       <div class="column">
         <span class="iconfont icon-xiayishou"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-bofangliebiao" @touchend="showList"></span>
+        <span class="iconfont icon-bofangliebiao" @click="showList"></span>
       </div>
     </div>
 
     <transition name="bg">
-      <div class="list-bg" v-if="listShow" @touchend="closeList"></div>
+      <div class="list-bg" v-if="listShow" @click="closeList"></div>
     </transition>
 
     <transition name="box">
@@ -43,10 +50,10 @@
         </div>
         <div class="list-body">
           <ul class="list-content">
-            <li v-for="song in list" class="list-item">
+            <li v-for="(song, index) in list" class="list-item" @click="play(song.id)">
               {{song.name}}
               <span class="list-singer">-{{song.ar[0].name}}</span>
-              <span class="iconfont icon-cha"></span>
+              <span class="iconfont icon-cha" @click.stop="remove(index)"></span>
             </li>
           </ul>
         </div>
@@ -63,9 +70,10 @@ export default {
       currentTime: 0,
       totalTime: 0,
       isPlaying: false,
-      si: 0,
       listShow: false,
-      list: []
+      list: [],
+      currentSong: {},
+      locked: false
     }
   },
   computed: {
@@ -81,10 +89,7 @@ export default {
   },
   methods: {
     followTouch (event) {
-      if(this.si !== 0) { //先停止自动更新视图
-        clearInterval(this.si)
-        this.si = 0
-      }
+      this.locked = true
       const BeginX = 60 //触点起始横坐标，值为进度条偏移值
       const TotalWidth = this.$refs.progresBar.offsetWidth
       const TotalTime = this.$refs.audio.duration
@@ -95,6 +100,7 @@ export default {
       this.currentTime = currentS
     },
     updateTouch () {
+      this.locked = false
       this.$refs.audio.currentTime = this.currentTime
     },
     togglePop () {
@@ -106,42 +112,72 @@ export default {
       }
     },
     canPlay () {
-      this.totalTime = this.$refs.audio.duration
+      console.log('canplay')
+      // this.totalTime = this.$refs.audio.duration
+      // this.$refs.audio.play()
     },
     playing () {
-      let vm = this
       this.isPlaying = true
-      this.si = setInterval(function() {
-        vm.currentTime = vm.$refs.audio.currentTime
-      }, 500)
     },
     pause () {
       this.currentTime = this.$refs.audio.currentTime
-      clearInterval(this.si)
-      this.si = 0
       this.isPlaying = false
     },
     showList () {
-      this.listShow = true
-
       let list = this.$ls.get('list');
       if(list) {
         this.list = list
+        this.listShow = true
       } else {
-        this.$http.get('/api/playlist/detail?id=530939045').then(res => {
-          console.log('get it')
-          console.log(res)
+        this.$http.get('/api/playlist/detail?id=607352128').then(res => {
           this.list = res.body.playlist.tracks;
-
+          this.$ls.set('list', this.list);
+          this.listShow = true
         }, res => {
-          console.error('获取歌单失败')
-          console.log(res)
+          //TODO
         })
       }
     },
     closeList (event) {
       this.listShow = false
-      console.log(this.list)
+    },
+    play (id) {
+      let audio = this.$refs.audio
+      if(id != this.currentSong.id) {
+        audio.pause()
+        this.$http.get('/api/music/url?id='+id).then(res => {
+          audio.src = res.body.data[0].url
+          // setTimeout(function() {
+          //   audio.play()
+          // }, 2000);
+          this.$http.get('/api/song/detail?ids='+id).then(res => {
+            this.currentSong = res.body.songs[0]
+          }, res => {
+            //TODO
+          })
+        }, res => {
+          //TODO
+        })
+      } else if(id == this.currentSong.id && !this.isPlaying) {
+        audio.play()
+      }
+    },
+    remove (index) {
+      this.list.splice(index, 1)
+      this.$ls.set('list', this.list);
+    },
+    timeUpdate () {
+      if(!this.locked) {
+        this.currentTime = this.$refs.audio.currentTime
+      }
+    },
+    waiting () {
+      console.log('waiting')
+    },
+    durationChange () {
+      console.log('durationChange')
+      this.totalTime = this.$refs.audio.duration
+      this.$refs.audio.play()
     }
   }
 }
@@ -284,11 +320,12 @@ export default {
 }
 
 .list-item {
+  position: relative;
+  padding-right: 45px;
   box-sizing: border-box;
   height: 45px;
   line-height: 45px;
   overflow: hidden;
-  /* TODO:  */
   border-bottom: 1px #EEE solid;
 }
 .list-item .list-singer {
@@ -296,8 +333,13 @@ export default {
   color: #999;
 }
 .list-item .iconfont {
-  float: right;
-  margin-right: 15px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: block;
+  width: 45px;
+  height: 100%;
+  text-align: center;
   color: #999;
 }
 
