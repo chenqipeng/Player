@@ -19,16 +19,16 @@
 
     <div class="play-control">
       <div class="column">
-        <span class="iconfont icon-liebiaoxunhuan"></span>
+        <span class="iconfont" :class="loopClass" @click="toggleLoop"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-shangyishou"></span>
+        <span class="iconfont icon-shangyishou" @click="previous"></span>
       </div>
       <div class="column">
         <span class="iconfont" :class="toggleClass" @click="togglePop"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-xiayishou"></span>
+        <span class="iconfont icon-xiayishou" @click="next"></span>
       </div>
       <div class="column">
         <span class="iconfont icon-bofangliebiao" @click="showList"></span>
@@ -42,13 +42,13 @@
     <transition name="box">
       <div class="list-box" v-if="listShow">
         <div class="list-head">
-          <a href="#" class="list-loop"><span class="iconfont icon-liebiaoxunhuan"></span>列表循环(20)</a>
-          <a href="#" class="list-clean"><span class="iconfont icon-qingkong"></span>清空</a>
-          <a href="#" class="list-collect"><span class="iconfont icon-shoucang"></span>收藏</a>
+          <a class="list-loop" @click.stop="toggleLoop"><span class="iconfont" :class="loopClass"></span>列表循环(20)</a>
+          <a class="list-clean"><span class="iconfont icon-qingkong"></span>清空</a>
+          <a class="list-collect"><span class="iconfont icon-shoucang"></span>收藏</a>
         </div>
         <div class="list-body">
           <ul class="list-content">
-            <li v-for="(song, index) in list" class="list-item" @click="play(song.id)">
+            <li v-for="(song, index) in list" class="list-item" :class="{active: index==currentIndex}" @click="play(index)">
               {{song.name}}
               <span class="list-singer">-{{song.ar[0].name}}</span>
               <span class="iconfont icon-cha" @click.stop="remove(index)"></span>
@@ -62,6 +62,12 @@
 </template>
 
 <script>
+import {
+  listRandom,
+  getPrevious,
+  getNext
+} from '@/utils'
+
 export default {
   data: function() {
     return {
@@ -72,7 +78,9 @@ export default {
       list: [],
       currentSong: {},
       locked: false,
-      isFirst: true
+      isFirst: true,
+      loopMode: 0,
+      currentIndex: 0
     }
   },
   computed: {
@@ -84,18 +92,39 @@ export default {
     },
     progressX () {
       return (this.totalTime>0) ? (this.currentTime/this.totalTime*100 + '%') : 0
+    },
+    loopClass () {
+      return {
+        'icon-liebiaoxunhuan': 0 == this.loopMode,
+        'icon-danquxunhuan'  : 1 == this.loopMode,
+        'icon-suijibofang'   : 2 == this.loopMode
+      }
     }
   },
   methods: {
+    timeUpdate () {
+      if(!this.locked) {
+        this.currentTime = this.$refs.audio.currentTime
+      }
+    },
+    loadedMetadata () {
+      this.totalTime = this.$refs.audio.duration
+    },
+    playing () {
+      this.isPlaying = true
+    },
+    pause () {
+      this.currentTime = this.$refs.audio.currentTime
+      this.isPlaying = false
+    },
     followTouch (event) {
       this.locked = true
       const BeginX = 60 //触点起始横坐标，值为进度条偏移值
       const TotalWidth = this.$refs.progresBar.offsetWidth
-      const TotalTime = this.$refs.audio.duration
       let clientX = event.changedTouches[0].clientX
       let offsetX = (clientX>BeginX) ? clientX-BeginX : 0
       let currentX = (offsetX<TotalWidth) ? offsetX : TotalWidth
-      let currentS = Math.round(currentX/TotalWidth*TotalTime)
+      let currentS = Math.round(currentX/TotalWidth * this.totalTime)
       this.currentTime = currentS
     },
     updateTouch () {
@@ -128,15 +157,16 @@ export default {
     closeList (event) {
       this.listShow = false
     },
-    play (id) {
+    play (index) {
       let audio = this.$refs.audio
+      let id = this.list[index].id
       if(id != this.currentSong.id) {
         if(this.isPlaying) {
           audio.pause()
         }
-        if(this.isFirst) { //移动端浏览器对媒体的播放只能通过用户交互来加载，load()在需要在交互函数(此处是play(id))内先执行一次
-          audio.load()
-          this.isFirst = false
+        if(this.isFirst) {      //移动端浏览器对媒体的播放只能通过用户交互来加载，异步函数内的js加载不算用户交互
+          audio.load()          //所以load()在需要在交互函数(此处是play)内先执行一次
+          this.isFirst = false  //后面的就可以正常执行了
         }
         this.currentTime = 0
         this.totalTime = 0
@@ -144,6 +174,7 @@ export default {
           audio.src = res.body.data[0].url
           audio.load()
           audio.play()
+          this.currentIndex = index
         }, res => {
           console.error(res)//TODO
         })
@@ -160,20 +191,34 @@ export default {
       this.list.splice(index, 1)
       this.$ls.set('list', this.list);
     },
-    timeUpdate () {
-      if(!this.locked) {
-        this.currentTime = this.$refs.audio.currentTime
+    toggleLoop () {
+      if(this.loopMode+1 > 2) {
+        this.loopMode = 0
+      } else {
+        this.loopMode++
       }
     },
-    loadedMetadata () {
-      this.totalTime = this.$refs.audio.duration
+    previous () {
+      let previousIndex = getPrevious(this.list.length, this.currentIndex, this.loopMode)
+      this.play(previousIndex)
     },
-    playing () {
-      this.isPlaying = true
-    },
-    pause () {
-      this.currentTime = this.$refs.audio.currentTime
-      this.isPlaying = false
+    next () {
+      let nextIndex = getNext(this.list.length, this.currentIndex, this.loopMode)
+      this.play(nextIndex)
+    }
+  },
+  mounted: function() {
+    return //TODO
+    let list = this.$ls.get('list');
+    if(list) {
+      this.list = list
+    } else {
+      this.$http.get('/api/playlist/detail?id=607352128').then(res => {
+        this.list = res.body.playlist.tracks;
+        this.$ls.set('list', this.list);
+      }, res => {
+        console.error(res)//TODO
+      })
     }
   }
 }
@@ -324,9 +369,12 @@ export default {
   overflow: hidden;
   border-bottom: 1px #EEE solid;
 }
-.list-item .list-singer {
+.list-singer {
   font-size: 12px;
   color: #999;
+}
+.list-item.active, .active .list-singer {
+  color: #F00;
 }
 .list-item .iconfont {
   position: absolute;
