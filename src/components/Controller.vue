@@ -68,6 +68,8 @@ import {
   getNext
 } from '@/utils'
 
+import * as Remote from '@/remote'
+
 export default {
   data: function() {
     return {
@@ -145,7 +147,7 @@ export default {
         this.list = list
         this.listShow = true
       } else {
-        this.$http.get('/api/playlist/detail?id=607352128').then(res => {
+        Remote.getPlayList('607352128').then(res => {
           this.list = res.body.playlist.tracks;
           this.$ls.set('list', this.list);
           this.listShow = true
@@ -170,7 +172,7 @@ export default {
         }
         this.currentTime = 0
         this.totalTime = 0
-        this.$http.get('/api/music/url?id='+id).then(res => {
+        Remote.getMusicUrl(id).then(res => {
           audio.src = res.body.data[0].url
           audio.load()
           audio.play()
@@ -178,7 +180,7 @@ export default {
         }, res => {
           console.error(res)//TODO
         })
-        this.$http.get('/api/song/detail?ids='+id).then(res => {
+        Remote.getMusicDetail(id).then(res => {
           this.currentSong = res.body.songs[0]
         }, res => {
           console.error(res)//TODO
