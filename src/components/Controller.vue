@@ -1,10 +1,9 @@
 <template lang="html">
   <div id="controller">
-    <audio src="" autoplay
+    <audio src=""
     @playing="playing"
     @pause="pause"
     @timeupdate="timeUpdate"
-    @durationchange="durationChange"
     @loadedmetadata="loadedMetadata"
     ref="audio"></audio>
 
@@ -29,7 +28,7 @@
         <span class="iconfont" :class="toggleClass" @click="togglePop"></span>
       </div>
       <div class="column">
-        <span class="iconfont icon-xiayishou" @click="loadUrl"></span>
+        <span class="iconfont icon-xiayishou"></span>
       </div>
       <div class="column">
         <span class="iconfont icon-bofangliebiao" @click="showList"></span>
@@ -72,7 +71,8 @@ export default {
       listShow: false,
       list: [],
       currentSong: {},
-      locked: false
+      locked: false,
+      isFirst: true
     }
   },
   computed: {
@@ -110,13 +110,6 @@ export default {
         audio.pause()
       }
     },
-    playing () {
-      this.isPlaying = true
-    },
-    pause () {
-      this.currentTime = this.$refs.audio.currentTime
-      this.isPlaying = false
-    },
     showList () {
       let list = this.$ls.get('list');
       if(list) {
@@ -128,7 +121,7 @@ export default {
           this.$ls.set('list', this.list);
           this.listShow = true
         }, res => {
-          //TODO
+          console.error(res)//TODO
         })
       }
     },
@@ -140,15 +133,17 @@ export default {
       if(id != this.currentSong.id) {
         if(this.isPlaying) {
           audio.pause()
-        } else {
-          // audio.load() //TODO 在真机Chrome上，缺少这步会导致第一次点击无法播放（而且这步必须放在此位置，放在修改src之后也不行），原因待查
+        }
+        if(this.isFirst) { //移动端浏览器对媒体的播放只能通过用户交互来加载，load()在需要在交互函数(此处是play(id))内先执行一次
+          audio.load()
+          this.isFirst = false
         }
         this.currentTime = 0
         this.totalTime = 0
         this.$http.get('/api/music/url?id='+id).then(res => {
           audio.src = res.body.data[0].url
           audio.load()
-          console.log(audio.src);
+          audio.play()
         }, res => {
           console.error(res)//TODO
         })
@@ -170,28 +165,15 @@ export default {
         this.currentTime = this.$refs.audio.currentTime
       }
     },
-    durationChange () {
-      console.log('durationChange')
-    },
     loadedMetadata () {
-      console.log('loadedMetadata')
       this.totalTime = this.$refs.audio.duration
     },
-    loadUrl () {
-      let audio = this.$refs.audio
-      audio.src = 'http://m10.music.126.net/20170919010729/8b5a92cef795c2866996d38c43308be5/ymusic/0dcb/20b9/2c64/ca7e196cc933a589e3e800eebe15031d.mp3'
-      setTimeout(function() {
-        // audio.load()
-      }, 1000);
-      console.log(audio.src);
-      this.$http.get('/api/music/url?id=27506983').then(res => {
-        // audio.src = res.body.data[0].url
-        // audio.src = 'http://m10.music.126.net/20170919010729/8b5a92cef795c2866996d38c43308be5/ymusic/0dcb/20b9/2c64/ca7e196cc933a589e3e800eebe15031d.mp3'
-        audio.load()//TODO 问题出在这里，该处的load()没有执行，原因待查
-        // console.log(audio.src);
-      }, res => {
-        console.error(res)//TODO
-      })
+    playing () {
+      this.isPlaying = true
+    },
+    pause () {
+      this.currentTime = this.$refs.audio.currentTime
+      this.isPlaying = false
     }
   }
 }
