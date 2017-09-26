@@ -1,6 +1,8 @@
 <template>
   <div id="player">
-    <headbar></headbar>
+    <headbar
+      v-bind:current-song="currentSong"></headbar>
+
     <lyrics></lyrics>
 
     <controller
@@ -171,7 +173,7 @@ export default {
     },
     _loadList (callback) {
       let list = this.$ls.get('list')
-      let id = '48531831'
+      let id = '934394025'
       if(list) {
         this.list = list
         if(callback && typeof callback == 'function') {

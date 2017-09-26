@@ -2,8 +2,8 @@
   <div id="headbar">
     <div class="back iconfont icon-fanhui"></div>
     <div class="title">
-      <h1>Without You (feat. Usher)</h1>
-      <span>David Guetta/Usher</span>
+      <h1>{{currentSong.name}}</h1>
+      <span>{{currentSong.ar | arToString}}</span>
     </div>
     <div class=" share iconfont icon-fenxiang"></div>
   </div>
@@ -11,7 +11,9 @@
 
 <script>
 export default {
-
+  props: [
+    'currentSong'
+  ]
 }
 </script>
 

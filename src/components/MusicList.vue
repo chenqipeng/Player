@@ -15,7 +15,7 @@
           <ul class="list-content">
             <li v-for="(song, index) in list" class="list-item" :class="{active: index==currentIndex}" @click="play(index)">
               {{song.name}}
-              <span class="list-singer">-{{song.ar[0].name}}</span>
+              <span class="list-singer">-{{song.ar | arToString}}</span>
               <span class="iconfont icon-cha" @click.stop="remove(index)"></span>
             </li>
           </ul>
