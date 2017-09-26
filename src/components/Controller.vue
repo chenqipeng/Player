@@ -5,6 +5,7 @@
     @pause="pause"
     @timeupdate="timeUpdate"
     @loadedmetadata="loadedMetadata"
+    @ended="ended"
     ref="audio"></audio>
 
     <div class="progress-control">
@@ -119,6 +120,20 @@ export default {
       this.currentTime = this.$refs.audio.currentTime
       this.isPlaying = false
     },
+    ended () {
+      switch (this.loopMode) {
+        case 0:
+          this.next()
+          break;
+        case 1:
+          this.$refs.audio.play()
+          break;
+        case 2:
+          let randomIndex = listRandom(this.list.length, this.currentIndex)
+          this.play(randomIndex)
+          break;
+      }
+    },
     followTouch (event) {
       this.locked = true
       const BeginX = 60 //触点起始横坐标，值为进度条偏移值
@@ -142,19 +157,9 @@ export default {
       }
     },
     showList () {
-      let list = this.$ls.get('list');
-      if(list) {
-        this.list = list
+      this._loadList(() => {
         this.listShow = true
-      } else {
-        Remote.getPlayList('607352128').then(res => {
-          this.list = res.body.playlist.tracks;
-          this.$ls.set('list', this.list);
-          this.listShow = true
-        }, res => {
-          console.error(res)//TODO
-        })
-      }
+      })
     },
     closeList (event) {
       this.listShow = false
@@ -172,17 +177,10 @@ export default {
         }
         this.currentTime = 0
         this.totalTime = 0
-        Remote.getMusicUrl(id).then(res => {
-          audio.src = res.body.data[0].url
-          audio.load()
+        this._loadMusic(id).then(() => {
           audio.play()
           this.currentIndex = index
-        }, res => {
-          console.error(res)//TODO
-        })
-        Remote.getMusicDetail(id).then(res => {
-          this.currentSong = res.body.songs[0]
-        }, res => {
+        }).catch(res => {
           console.error(res)//TODO
         })
       } else if(id == this.currentSong.id && !this.isPlaying) {
@@ -207,21 +205,48 @@ export default {
     next () {
       let nextIndex = getNext(this.list.length, this.currentIndex, this.loopMode)
       this.play(nextIndex)
+    },
+    _loadMusic (id) {
+      let audio = this.$refs.audio
+      Remote.getMusicDetail(id).then(res => {
+        this.currentSong = res.body.songs[0]
+      }).catch(res => {
+        console.error(res)//TODO
+      })
+      return Remote.getMusicUrl(id).then(res => {
+        audio.src = res.body.data[0].url
+        audio.load()
+      })
+    },
+    _loadList (callback) {
+      let list = this.$ls.get('list')
+      let id = '48531831'
+      if(list) {
+        this.list = list
+        if(callback && typeof callback == 'function') {
+          callback()
+        }
+      } else {
+        Remote.getPlayList(id).then(res => {
+          this.list = res.body.playlist.tracks
+          this.$ls.set('list', this.list)
+          if(callback && typeof callback == 'function') {
+            callback()
+          }
+        }, res => {
+          console.error(res)//TODO
+        })
+      }
     }
   },
   mounted: function() {
-    return //TODO
-    let list = this.$ls.get('list');
-    if(list) {
-      this.list = list
-    } else {
-      this.$http.get('/api/playlist/detail?id=607352128').then(res => {
-        this.list = res.body.playlist.tracks;
-        this.$ls.set('list', this.list);
-      }, res => {
+    this._loadList(() => {
+      this._loadMusic(this.list[0].id).then(() => {
+        this.currentIndex = 0
+      }).catch(res => {
         console.error(res)//TODO
       })
-    }
+    })
   }
 }
 
