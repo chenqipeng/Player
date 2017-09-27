@@ -4,6 +4,7 @@
       v-bind:current-song="currentSong"></headbar>
 
     <lyrics
+      v-bind:current-time="currentTime"
       v-bind:current-song="currentSong"></lyrics>
 
     <controller

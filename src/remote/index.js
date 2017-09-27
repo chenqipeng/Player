@@ -4,7 +4,8 @@ import VueResource from 'vue-resource'
 export {
   getPlayList,
   getMusicUrl,
-  getMusicDetail
+  getMusicDetail,
+  getLyrics
 }
 
 Vue.use(VueResource)
@@ -19,4 +20,8 @@ function getMusicUrl(id) {
 
 function getMusicDetail(id) {
   return Vue.http.get('/api/song/detail?ids='+id)
+}
+
+function getLyrics(id) {
+  return Vue.http.get('/api/lyric?id='+id)
 }
