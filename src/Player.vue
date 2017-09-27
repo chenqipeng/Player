@@ -3,7 +3,8 @@
     <headbar
       v-bind:current-song="currentSong"></headbar>
 
-    <lyrics></lyrics>
+    <lyrics
+      v-bind:current-song="currentSong"></lyrics>
 
     <controller
       v-bind:current-time="currentTime"
@@ -204,26 +205,22 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 @import url("//at.alicdn.com/t/font_383468_qpislzg22ulerk9.css");
 
-html, body {
+#player {
   height: 100%;
-  margin: 0;
-}
-
-body {
-  box-sizing: border-box;
-  padding: 45px 0 100px 0;
-}
-
-#lyrics {
 }
 
 #headbar {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+#lyrics {
+  height: 100%;
+  overflow: scroll;
 }
 
 #controller {
