@@ -5,6 +5,8 @@
 
     <lyrics
       v-bind:current-time="currentTime"
+      v-bind:total-time="totalTime"
+      v-bind:seeked-time="seekedTime"
       v-bind:current-song="currentSong"></lyrics>
 
     <controller
@@ -35,6 +37,7 @@
       @timeupdate="timeUpdate"
       @loadedmetadata="loadedMetadata"
       @ended="ended"
+      @seeked="seeked"
       ref="audio"></audio>
 
   </div>
@@ -71,7 +74,8 @@ export default {
       currentSong: {},
       isFirst: true,
       loopMode: 0,
-      currentIndex: 0
+      currentIndex: 0,
+      seekedTime: 0
     }
   },
   methods: {
@@ -101,6 +105,9 @@ export default {
           this.play(randomIndex)
           break;
       }
+    },
+    seeked () {
+      this.seekedTime = this.currentTime
     },
     play (index) {
       let audio = this.$refs.audio
@@ -221,7 +228,7 @@ export default {
 
 #lyrics {
   height: 100%;
-  overflow: scroll;
+  overflow: hidden;
 }
 
 #controller {

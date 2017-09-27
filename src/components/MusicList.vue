@@ -1,11 +1,11 @@
 <template lang="html">
   <div id="music-list">
     <transition name="bg">
-      <div class="list-bg" v-if="listShow" @click="closeList"></div>
+      <div class="list-bg" v-show="listShow" @click="closeList"></div>
     </transition>
 
     <transition name="box">
-      <div class="list-box" v-if="listShow">
+      <div class="list-box" v-show="listShow">
         <div class="list-head">
           <a class="list-loop" @click.stop="toggleLoop"><span class="iconfont" :class="loopClass"></span>列表循环({{list.length}})</a>
           <a class="list-clean"><span class="iconfont icon-qingkong"></span>清空</a>

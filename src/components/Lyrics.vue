@@ -1,13 +1,17 @@
 <template lang="html">
   <div id="lyrics">
     <transition name="album">
-      <div v-if="albumActive" @click="showLyric" class="content album">
+      <div v-show="albumActive" @click="showLyric" class="content album">
         <img :src="currentSong.al && currentSong.al.picUrl" class="pic">
       </div>
     </transition>
     <transition name="lyric">
-      <div v-if="!albumActive" @click="showAlbum" class="content">
-        <p>{{activeLyric}}</p>
+      <div v-show="!albumActive" @click="showAlbum" class="content">
+        <ul class="lyrics-list" ref="lyrics">
+          <li class="lyrics-item" v-for="item in Object.keys(lyricsMap)" :class="{active: item==activeTime}">
+            {{lyricsMap[item]}}
+          </li>
+        </ul>
       </div>
     </transition>
   </div>
@@ -20,7 +24,8 @@ export default {
     return {
       albumActive: true,
       lyrics: '',
-      activeLyric: ''
+      activeTime: 0,
+      maxTop: NaN
     }
   },
   computed: {
@@ -34,7 +39,9 @@ export default {
   },
   props: [
     'currentSong',
-    'currentTime'
+    'currentTime',
+    'totalTime',
+    'seekedTime'
   ],
   methods: {
     showAlbum () {
@@ -42,19 +49,42 @@ export default {
     },
     showLyric () {
       this.albumActive = false
+      this.scrollLyric()
+    },
+    scrollLyric (i) {
+      const Offset = -40
+      let index = i || Object.keys(this.lyricsMap).indexOf(this.activeTime.toString())
+      let offsetY = index>=0 ? index*Offset : 0
+      if(isNaN(this.maxTop)) {
+        this.maxTop = +window.getComputedStyle(this.$refs.lyrics).top.replace('px', '')
+      }
+      this.$refs.lyrics.style.top = this.maxTop + offsetY + 'px'
     }
   },
   watch: {
     currentSong () {
+      this.lyrics = ''
+      this.activeTime = 0
       Remote.getLyrics(this.currentSong.id).then(res => {
         this.lyrics = res.body.lrc.lyric
       })
+      this.$refs.lyrics.style.top = '50%'
     },
     currentTime () {
-      let active = this.lyricsMap[Math.floor(this.currentTime)]
-      if(active) {
-        this.activeLyric = active
+      let time = Math.floor(this.currentTime)
+      if(this.lyricsMap[time] && time != this.activeTime) {
+        this.activeTime = time
+        this.scrollLyric()
       }
+    },
+    seekedTime () {
+      let index = 0
+      let lyricsKeys = Object.keys(this.lyricsMap)
+      while (lyricsKeys[index] < this.seekedTime) {
+        index++
+      }
+      this.activeTime = lyricsKeys[index]
+      this.scrollLyric(index)
     }
   }
 }
@@ -105,5 +135,29 @@ export default {
   margin-left: -100px;
   width: 200px;
   height: 200px;
+}
+
+.active {
+  color: #F00;
+}
+
+.lyrics-list {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: top .3s;
+}
+
+.lyrics-item {
+  box-sizing: border-box;
+  padding: 0px 10px;
+  width: 100%;
+  height: 40px;
+  text-align: center;
+  overflow: hidden;
 }
 </style>
